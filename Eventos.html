@@ -1,0 +1,96 @@
+<html lang="pt">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Eventos LendaryosMu</title>
+        <style>
+            :root {
+                --cor-fundo: #212121;
+                --cor-fonte: #ececec;
+                --tamanho-fonte: 16px;
+                --fonte: "Segoe UI";
+            }
+
+            body {
+                background-color: var(--cor-fundo);
+                color: var(--cor-fonte);
+                font-size: var(--tamanho-fonte);
+                font-family: var(--fonte);
+            }
+
+            table tbody td:nth-child(2) {
+                width: 150px;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tbody id="dados-eventos"></tbody>
+        </table>
+    </body>
+    <script>
+        const App = {
+            Eventos: [
+                {id:1, nome:"Death King", horarios:["00:05","04:05","08:05","12:05","16:05","20:05"]},
+                {id:2, nome:"Red Dragon", horarios:["00:15","04:15","08:15","12:15","16:15","20:15"]},
+                {id:3, nome:"Golden Invasion", horarios:["00:25","04:25","08:25","12:25","16:25","20:25"]},
+                {id:4, nome:"White wizard", horarios:["00:50","04:50","08:50","12:50","16:50","20:50"]},
+                {id:5, nome:"Bali", horarios:["01:00","06:19","11:00","16:00","21:00"]},
+                {id:6, nome:"Ice Queen", horarios:["02:00","07:00","12:00","17:00","22:00"]},
+                {id:7, nome:"Gorgon", horarios:["03:00","08:00","13:00","18:00","23:00"]},
+                {id:8, nome:"Balrog", horarios:["04:00","09:00","14:00","19:00","00:00"]},
+                {id:9, nome:"Hydra", horarios:["05:00","10:00","15:00","20:00"]},
+                {id:14, nome:"Zaikan", horarios:["03:00","06:00","09:00","12:00","15:00","18:00","21:00"]},
+                {id:15, nome:"Hell Maine", horarios:["03:30","06:30","09:30","12:30","15:30","18:30","21:30"]},
+                {id:16, nome:"Kundun", horarios:["14:00","10:00","20:00","22:00","08:00","21:00","22:00"]}
+            ]
+        };
+
+        App.Update = function() {
+            App.DataAtual = new Date();
+
+            const $dadosEventos = document.getElementById('dados-eventos');
+            $dadosEventos.innerHTML = '';
+
+            const eventos = App.Eventos.map(evento => {
+                evento.proximoHorario = App.ConverterHorariosParaDatas(evento.horarios)[0];
+                return evento;
+            }).sort((a, b) => a.proximoHorario - b.proximoHorario);
+
+            eventos.forEach(evento => {
+                const proximoHorario = App.ConverterHorariosParaDatas(evento.horarios)[0];
+                const diferenca = proximoHorario - App.DataAtual;
+                const horas = String(Math.floor(diferenca / (1000 * 60 * 60))).padStart(2, '0');
+                const minutos = String(Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const segundos = String(Math.floor((diferenca % (1000 * 60)) / 1000)).padStart(2, '0');
+
+                $dadosEventos.innerHTML += `
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>${evento.nome}</td>
+                        <td>${horas}:${minutos}:${segundos}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        App.ConverterHorariosParaDatas = function(horarios) {
+            return horarios.map(horario => App.ObterProximaData(horario)).sort();
+        }
+
+        App.ObterProximaData = function(horario) {
+            const [hora, minuto] = horario.split(':').map(Number);
+            const proximaData = new Date();
+            proximaData.setHours(hora, minuto, 0, 0);
+
+            if (proximaData < App.DataAtual)
+                proximaData.setDate(proximaData.getDate() + 1);
+
+            return proximaData;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            setInterval(App.Update, 1000);
+        });
+    </script>
+</html>
