@@ -7,6 +7,7 @@
             :root {
                 --cor-fundo: #212121;
                 --cor-fonte: #ececec;
+                --cor-listra-tabela: #303030;
                 --tamanho-fonte: 16px;
                 --fonte: "Segoe UI";
             }
@@ -18,18 +19,45 @@
                 font-family: var(--fonte);
             }
 
-            table tbody td:nth-child(2) {
-                width: 150px;
+            .container-dados-eventos {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 250px;
+
+                &:first-child {
+                    margin-bottom: 20px;
+                }
+
+                & h4 {
+                    margin: 10px;
+                }
+
+                & table {
+                    width: 100%;
+                }
             }
         </style>
     </head>
     <body>
-        <table>
-            <tbody id="dados-eventos"></tbody>
-        </table>
+        <div class="container-dados-eventos">
+            <h4>Próximos eventos</h4>
+            <table>
+                <tbody id="table-proximos"></tbody>
+            </table>
+        </div>
+
+        <div class="container-dados-eventos">
+            <h4>Eventos em andamento</h4>
+
+            <table>
+                <tbody id="table-em-andamento"></tbody>
+            </table>
+        </div>
     </body>
     <script>
         const App = {
+            StorageEventosSelecionados: 'EventosSelecionados',
             Eventos: [
                 {id:1, nome:"Death King", horarios:["00:05","04:05","08:05","12:05","16:05","20:05"]},
                 {id:2, nome:"Red Dragon", horarios:["00:15","04:15","08:15","12:15","16:15","20:15"]},
@@ -49,24 +77,30 @@
         App.Update = function() {
             App.DataAtual = new Date();
 
-            const $dadosEventos = document.getElementById('dados-eventos');
-            $dadosEventos.innerHTML = '';
+            App.AtualizarProximosEventos();
+            App.AtualizarEventosEmAndamento();
+        }
 
+        App.AtualizarProximosEventos = function() {
+            const eventosSelecionados = App.GetEventosSelecionados();
             const eventos = App.Eventos.map(evento => {
-                evento.proximoHorario = App.ConverterHorariosParaDatas(evento.horarios)[0];
+                evento.proximoHorario = App.ConverterHorariosParaProximasDatas(evento.horarios)[0];
                 return evento;
             }).sort((a, b) => a.proximoHorario - b.proximoHorario);
 
+            const $dadosEventos = document.getElementById('table-proximos');
+            $dadosEventos.innerHTML = '';
+
             eventos.forEach(evento => {
-                const proximoHorario = App.ConverterHorariosParaDatas(evento.horarios)[0];
-                const diferenca = proximoHorario - App.DataAtual;
+                const diferenca = evento.proximoHorario - App.DataAtual;
                 const horas = String(Math.floor(diferenca / (1000 * 60 * 60))).padStart(2, '0');
                 const minutos = String(Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
                 const segundos = String(Math.floor((diferenca % (1000 * 60)) / 1000)).padStart(2, '0');
+                const flagSelecionado = eventosSelecionados.find(id => id === evento.id) ? 'true' : '';
 
                 $dadosEventos.innerHTML += `
                     <tr>
-                        <td><input type="checkbox"></td>
+                        <td><input type="checkbox" onClick="App.OnToggleEvento(${evento.id})" ${flagSelecionado ? "checked" : ""}></td>
                         <td>${evento.nome}</td>
                         <td>${horas}:${minutos}:${segundos}</td>
                     </tr>
@@ -74,8 +108,34 @@
             });
         }
 
-        App.ConverterHorariosParaDatas = function(horarios) {
-            return horarios.map(horario => App.ObterProximaData(horario)).sort();
+        App.AtualizarEventosEmAndamento = function() {
+            const eventos = App.Eventos.map(evento => {
+                evento.horarioAnterior = App.ConverterHorariosParaDatasAnteriores(evento.horarios)[0];
+                return evento;
+            }).sort((a, b) => a.proximoHorario - b.proximoHorario);
+
+            const $dadosEventos = document.getElementById('table-em-andamento');
+            $dadosEventos.innerHTML = '';
+
+            eventos.forEach(evento => {
+                const diferenca = App.DataAtual - evento.horarioAnterior;
+                const horas = String(Math.floor(diferenca / (1000 * 60 * 60))).padStart(2, '0');
+                const minutos = String(Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const segundos = String(Math.floor((diferenca % (1000 * 60)) / 1000)).padStart(2, '0');
+
+                if (minutos >= 5) return;
+
+                $dadosEventos.innerHTML += `
+                    <tr>
+                        <td>${evento.nome}</td>
+                        <td>${horas}:${minutos}:${segundos}</td>
+                    </tr>
+                `;
+            });
+
+            if (!$dadosEventos.innerHTML) {
+                $dadosEventos.innerHTML += '<tr><td style="text-align: center;">Nenhum</td></tr>';
+            }
         }
 
         App.ObterProximaData = function(horario) {
@@ -89,7 +149,42 @@
             return proximaData;
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
+        App.ObterDataAnterior = function(horario) {
+            const [hora, minuto] = horario.split(':').map(Number);
+            const dataAnterior = new Date();
+            dataAnterior.setHours(hora, minuto, 0, 0);
+
+            if (dataAnterior > App.DataAtual)
+                dataAnterior.setDate(dataAnterior.getDate() - 1);
+
+            return dataAnterior;
+        }
+
+        App.OnToggleEvento = function(id) {
+            const eventosSelecionados = App.GetEventosSelecionados();
+            const indexEvento = eventosSelecionados.findIndex(evento => evento === id);
+
+            indexEvento >= 0 ? eventosSelecionados.splice(indexEvento, 1) : eventosSelecionados.push(id);
+            App.SetEventosSelecionados(eventosSelecionados);
+        }
+
+        App.ConverterHorariosParaProximasDatas = function(horarios) {
+            return horarios.map(horario => App.ObterProximaData(horario)).sort((a, b) => a - b);
+        }
+
+        App.ConverterHorariosParaDatasAnteriores = function(horarios) {
+            return horarios.map(horario => App.ObterDataAnterior(horario)).sort((a, b) => b - a);
+        }
+
+        App.GetEventosSelecionados = function() {
+            return JSON.parse(localStorage.getItem(App.StorageEventosSelecionados) || '[]');
+        }
+
+        App.SetEventosSelecionados = function(eventosSelecionados) {
+            localStorage.setItem(App.StorageEventosSelecionados, JSON.stringify(eventosSelecionados));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
             setInterval(App.Update, 1000);
         });
     </script>
