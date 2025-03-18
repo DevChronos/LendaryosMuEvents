@@ -35,6 +35,10 @@
 
                 & table {
                     width: 100%;
+
+                    & td:first-child {
+                        width: 100%;
+                    }
                 }
             }
         </style>
@@ -100,7 +104,6 @@
 
                 $dadosEventos.innerHTML += `
                     <tr>
-                        <td><input type="checkbox" onClick="App.OnToggleEvento(${evento.id})" ${flagSelecionado ? "checked" : ""}></td>
                         <td>${evento.nome}</td>
                         <td>${horas}:${minutos}:${segundos}</td>
                     </tr>
@@ -123,7 +126,7 @@
                 const minutos = String(Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
                 const segundos = String(Math.floor((diferenca % (1000 * 60)) / 1000)).padStart(2, '0');
 
-                if (minutos >= 5) return;
+                if (diferenca >= (5 * 60 * 1000)) return;
 
                 $dadosEventos.innerHTML += `
                     <tr>
