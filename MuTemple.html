@@ -1,0 +1,232 @@
+<html lang="pt">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Eventos Mu Temple</title>
+        <style>
+            :root {
+                --cor-fundo: #212121;
+                --cor-fonte: #ececec;
+                --cor-listra-tabela: #303030;
+                --tamanho-fonte: 16px;
+                --fonte: "Segoe UI";
+            }
+
+            body {
+                background-color: var(--cor-fundo);
+                color: var(--cor-fonte);
+                font-size: var(--tamanho-fonte);
+                font-family: var(--fonte);
+            }
+
+            .container-dados-eventos {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 250px;
+
+                &:first-child {
+                    margin-bottom: 20px;
+                }
+
+                & h4 {
+                    margin: 10px;
+                }
+
+                & table {
+                    width: 100%;
+
+                    & td:first-child {
+                        width: 100%;
+                    }
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-dados-eventos">
+            <h4>Próximos eventos</h4>
+            <table>
+                <tbody id="table-proximos"></tbody>
+            </table>
+        </div>
+
+        <div class="container-dados-eventos">
+            <h4>Eventos em andamento</h4>
+
+            <table>
+                <tbody id="table-em-andamento"></tbody>
+            </table>
+        </div>
+    </body>
+    <script>
+        const App = {
+            Eventos: [
+                {nome:"Blood Castle", horarios:["03:00","07:00","11:00","15:00","19:00","22:50"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/blood-castle"},
+                {nome:"Chaos Castle", horarios:["01:00","05:00","09:00","13:00","17:00","20:50"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/chaos-castle"},
+                {nome:"Devil Square", horarios:["01:30","03:30","05:30","07:30","09:30","11:30","13:30","15:30","17:30","19:30","21:30","23:30"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/devil-square"},
+                {nome:"Ilusion Temple", horarios:["04:30","06:30","10:30","14:30","16:30","20:30"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/ilusion-temple"},
+                {nome:"Castle Deep", horarios:["23:00:2","14:00:3","04:00:4","16:00:5","23:00:6","02:00:7","19:00:1"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/erohin"},
+                {nome:"Crywolf", horarios:["21:00:2","21:00:4","18:00:7"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/balgass"},
+                {nome:"Happy Hour", horarios:["14:00:1","18:00:2","18:00:3","18:00:4","18:00:5","18:00:6","14:00:7"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/happy-hour"},
+                {nome:"Moss Merchant", horarios:["02:15","08:15","14:15","20:15"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/moss-merchant"},
+                {nome:"Warsong", horarios:["22:00:4"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/warsong"},
+                {nome:"BKxBK", horarios:["20:00:3"]},
+                {nome:"SMxSM", horarios:["21:00:2"]},
+                {nome:"ELFxELF", horarios:["21:00:4"]},
+                {nome:"MGxMG", horarios:["21:00:5"]},
+                {nome:"DLxDL", horarios:["20:00:6"]},
+                {nome:"SUMxSUM", horarios:["20:00:7"]},
+                {nome:"RFxRF", horarios:["20:00:1"]},
+                {nome:"King of PvP", horarios:["22:00:1"], link: "https://mutemple.gitbook.io/guias-mutemple/eventos/king-of-pvp"},
+
+                {nome:"White Wizard", horarios:["00:55","04:55","08:50","12:55","16:55","20:55"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/white-wizard"},
+                {nome:"Death King", horarios:["00:05","04:05","08:05","12:05","16:05","20:05"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/skeleton-king"},
+                {nome:"Red Dragon", horarios:["00:15","04:15","08:15","12:15","16:15","20:15"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/red-dragon"},
+                {nome:"Golden", horarios:["00:25","04:25","08:25","12:25","16:25","20:25"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/golden"},
+                {nome:"Pouch of Blessing", horarios:["00:35","04:35","08:35","12:35","16:35","20:35"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/fortune-pouch"},
+                {nome:"Lunar Rabit", horarios:["00:45","04:45","08:45","12:45","16:45","20:45"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/lunar-rabbit"},
+                {nome:"Fire Flame Ghost", horarios:["01:05","05:05","09:05","13:05","17:05","21:05"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/fire-flame-ghost"},
+                {nome:"Invasion of Demons", horarios:["01:25","05:25","09:25","13:25","17:25","21:25"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/demons"},
+                {nome:"Career", horarios:["00:00","03:00","06:00","09:00","12:00","15:00","18:00","21:00"], link: "https://mutemple.gitbook.io/guias-mutemple/tutoriais/quests-carreira"},
+
+                {nome:"Kundun", horarios:["16:00:2","04:00:3","23:00:4","02:00:5","16:00:6","21:00:7","02:00:1"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/kundum"},
+                {nome:"Medusa", horarios:["21:00:3","21:00:6","16:00:7","18:00:1"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/medusa"},
+                {nome:"Core Magriffy", horarios:["18:00:2","23:00:3","02:00:4","21:00:5","04:00:6","14:00:7","23:00:1"], link: "https://mutemple.gitbook.io/guias-mutemple/invasoes-e-boss/core-magriffy"}
+            ]
+        };
+
+        App.Update = function() {
+            App.DataAtual = new Date();
+
+            App.AtualizarProximosEventos();
+            App.AtualizarEventosEmAndamento();
+        }
+
+        App.AtualizarProximosEventos = function() {
+            const eventos = App.Eventos.map(evento => {
+                evento.proximoHorario = App.ConverterHorariosParaProximasDatas(evento.horarios)[0];
+                return evento;
+            }).sort((a, b) => a.proximoHorario - b.proximoHorario);
+
+            const $dadosEventos = document.getElementById('table-proximos');
+            $dadosEventos.innerHTML = '';
+
+            eventos.forEach(evento => {
+                const diferenca = evento.proximoHorario - App.DataAtual;
+                const horas = String(Math.floor(diferenca / (1000 * 60 * 60))).padStart(2, '0');
+                const minutos = String(Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const segundos = String(Math.floor((diferenca % (1000 * 60)) / 1000)).padStart(2, '0');
+
+                $dadosEventos.innerHTML += `
+                    <tr>
+                        <td>${evento.nome}</td>
+                        <td>${horas}:${minutos}:${segundos}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        App.AtualizarEventosEmAndamento = function() {
+            const eventos = App.Eventos.map(evento => {
+                evento.horarioAnterior = App.ConverterHorariosParaDatasAnteriores(evento.horarios)[0];
+                return evento;
+            }).sort((a, b) => a.proximoHorario - b.proximoHorario);
+
+            const $dadosEventos = document.getElementById('table-em-andamento');
+            $dadosEventos.innerHTML = '';
+
+            eventos.forEach(evento => {
+                const diferenca = App.DataAtual - evento.horarioAnterior;
+                const horas = String(Math.floor(diferenca / (1000 * 60 * 60))).padStart(2, '0');
+                const minutos = String(Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const segundos = String(Math.floor((diferenca % (1000 * 60)) / 1000)).padStart(2, '0');
+
+                if (diferenca >= (5 * 60 * 1000)) return;
+
+                $dadosEventos.innerHTML += `
+                    <tr>
+                        <td>${evento.nome}</td>
+                        <td>${horas}:${minutos}:${segundos}</td>
+                    </tr>
+                `;
+            });
+
+            if (!$dadosEventos.innerHTML) {
+                $dadosEventos.innerHTML += '<tr><td style="text-align: center;">Nenhum</td></tr>';
+            }
+        }
+
+        App.ObterProximaData = function(horario) {
+            const [hora, minuto, dia] = horario.split(':').map(Number);
+            const proximaData = new Date();
+            proximaData.setHours(hora, minuto, 0, 0);
+
+            if (dia) {
+                const diaAtual = App.DataAtual.getDay() + 1;
+                const delta = dia - diaAtual;
+                proximaData.setDate(proximaData.getDate() + delta);
+
+                if (proximaData < App.DataAtual)
+                    proximaData.setDate(proximaData.getDate() + 7);
+            }
+
+            else if (proximaData < App.DataAtual)
+                proximaData.setDate(proximaData.getDate() + 1);
+
+            return proximaData;
+        }
+
+        App.ObterDataAnterior = function(horario) {
+            const [hora, minuto, dia] = horario.split(':').map(Number);
+            const dataAnterior = new Date();
+            dataAnterior.setHours(hora, minuto, 0, 0);
+
+            if (dia) {
+                const diaAtual = App.DataAtual.getDay() + 1;
+                const delta = diaAtual - dia;
+                dataAnterior.setDate(dataAnterior.getDate() - delta);
+
+                if (dataAnterior > App.DataAtual)
+                    dataAnterior.setDate(dataAnterior.getDate() - 7);
+            }
+
+            else if (dataAnterior > App.DataAtual)
+                dataAnterior.setDate(dataAnterior.getDate() - 1);
+
+            return dataAnterior;
+        }
+
+        App.ConverterHorariosParaProximasDatas = function(horarios) {
+            return horarios.map(horario => App.ObterProximaData(horario)).sort((a, b) => a - b);
+        }
+
+        App.ConverterHorariosParaDatasAnteriores = function(horarios) {
+            return horarios.map(horario => App.ObterDataAnterior(horario)).sort((a, b) => b - a);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setInterval(App.Update, 1000);
+        });
+    </script>
+</html>
+
+<!-- 
+function formatEvents(events) {
+    return events.map(event => {
+        let formattedEvent = { nome: event[0], horarios: [] };
+
+        // Verifica se o evento tem dias da semana
+        if (Array.isArray(event[1]) && typeof event[1][0] === "number") {
+            formattedEvent.dias = event[1];
+            formattedEvent.horarios = event[2].flat();
+        } else {
+            formattedEvent.horarios = event[1];
+        }
+
+        return formattedEvent;
+    });
+}
+
+console.log(JSON.stringify(formatEvents(bosses)));
+-->
