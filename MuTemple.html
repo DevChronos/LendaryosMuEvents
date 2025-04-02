@@ -8,6 +8,7 @@
                 --cor-fundo: #212121;
                 --cor-fonte: #ececec;
                 --cor-listra-tabela: #303030;
+                --cor-link: #9abcff;
                 --tamanho-fonte: 16px;
                 --fonte: "Segoe UI";
             }
@@ -38,6 +39,15 @@
 
                     & td:first-child {
                         width: 100%;
+                    }
+
+                    & td a {
+                        color: var(--cor-link);
+                        text-decoration: none;
+
+                        &:visited {
+                            color: var(--cor-link);
+                        }
                     }
                 }
             }
@@ -120,11 +130,17 @@
 
                 $dadosEventos.innerHTML += `
                     <tr>
-                        <td>${evento.nome}</td>
+                        ${_ObterTdNomeEvento(evento)}
                         <td>${horas}:${minutos}:${segundos}</td>
                     </tr>
                 `;
             });
+
+            function _ObterTdNomeEvento(evento) {
+                return evento.link
+                    ? `<td><a href="${evento.link}" target="_blank">${evento.nome}</a></td>`
+                    : `<td>${evento.nome}</td>`;
+            }
         }
 
         App.AtualizarEventosEmAndamento = function() {
